@@ -1,0 +1,12 @@
+data/
+.venv/
+results/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Common system files
+.DS_Store
+Thumbs.db
