@@ -1,6 +1,6 @@
 data/
 .venv/
-results/
+# results/
 
 # Python cache files
 __pycache__/
@@ -10,3 +10,5 @@ __pycache__/
 # Common system files
 .DS_Store
 Thumbs.db
+
+cache/
