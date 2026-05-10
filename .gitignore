@@ -11,4 +11,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# local cache
 cache/
+
+# temp files
+test.py
