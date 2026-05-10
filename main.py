@@ -14,7 +14,11 @@ import numpy as np
 import pandas as pd
 import torch
 
-from utils import download_imagenet_index, build_category_to_indicies, CATEGORY_TO_SYNSETS
+from utils import (download_imagenet_index,
+                    build_category_to_indicies, 
+                    CATEGORY_TO_SYNSETS,
+                    discover_dataset,
+                    load_image)
 
 CONFIG = {
     # Dataset
@@ -64,9 +68,22 @@ print(f"  Images   : {CONFIG['max_images'] or 'all'}")  # if max_images is set t
 # -> 3- cap number of images to CONFIG['max_images'] -> 4- load models
 # =======================================================================
 
+print("\n[Setup] Building ImageNet class mapping...")
 cache_path = os.path.join(CONFIG["data_dir"], "cache.json")
 synset_to_index, index_to_name = download_imagenet_index(CONFIG["imagenet_index_url"], cache_path)
 category_to_indicies, index_to_category = build_category_to_indicies(CATEGORY_TO_SYNSETS, synset_to_index)  
 #-> ( {"cat": {281, 289,}, ...}, {281: "cat", "289": "cat", ...} )
 
-# 2 -> 4 in progress
+print("\n[Setup] Discovering Dataset...")
+CATEGORIES = sorted(CATEGORY_TO_SYNSETS.keys())
+all_images = discover_dataset(dataset_root=CONFIG["dataset_root"], categories=CATEGORIES)
+
+# limiting images to set number
+np.random.seed(42)
+if CONFIG["max_images"] and len(all_images) > CONFIG["max_images"]:
+    index = np.random.choice(len(all_images), CONFIG["max_images"], replace=False)
+    all_images = [ all_images[i] for i in index ]
+    print(f"    Capped to {CONFIG["max_images"]} images. ")
+
+print("\n[Setup] Loading Modles...")
+# TODO models = load_models(CONFIG["models"], CONFIG["devices"])
