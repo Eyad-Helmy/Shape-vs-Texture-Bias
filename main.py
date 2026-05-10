@@ -20,6 +20,8 @@ from utils import (download_imagenet_index,
                     discover_dataset,
                     load_image)
 
+from models import load_all_models, run_inference
+
 CONFIG = {
     # Dataset
     "dataset_root": os.path.join(
@@ -86,4 +88,4 @@ if CONFIG["max_images"] and len(all_images) > CONFIG["max_images"]:
     print(f"    Capped to {CONFIG["max_images"]} images. ")
 
 print("\n[Setup] Loading Modles...")
-# TODO models = load_models(CONFIG["models"], CONFIG["devices"])
+models = load_all_models(CONFIG["models"], CONFIG["device"])
