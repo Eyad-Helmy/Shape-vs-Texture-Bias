@@ -232,7 +232,7 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
     return category_to_indices, index_to_category
 
 # test
-url = "https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json"
-synset_to_idx, idx_to_name = download_imagenet_index(url=url, save_path="../cache/cache.json")
-category_to_indices, index_to_category = build_category_to_indicies(category_to_synsets=CATEGORY_TO_SYNSETS, synset_to_idx=synset_to_idx)
-print(category_to_indices, "="*50, index_to_category)
+# url = "https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json"
+# synset_to_idx, idx_to_name = download_imagenet_index(url=url, save_path="../cache/cache.json")
+# category_to_indices, index_to_category = build_category_to_indicies(category_to_synsets=CATEGORY_TO_SYNSETS, synset_to_idx=synset_to_idx)
+# print(category_to_indices, "="*50, index_to_category)

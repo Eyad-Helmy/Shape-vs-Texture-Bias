@@ -16,3 +16,6 @@ cache/
 
 # temp files
 test.py
+
+# results
+results/
