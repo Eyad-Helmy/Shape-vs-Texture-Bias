@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-
+from utils import download_imagenet_index, build_category_to_indicies, CATEGORY_TO_SYNSETS
 
 CONFIG = {
     # Dataset
@@ -60,6 +60,13 @@ print(f"  Images   : {CONFIG['max_images'] or 'all'}")  # if max_images is set t
 
 
 # =======================================================================
-# SETUP
+# SETUP -> 1- construct model output index to category map -> 2- fetch all images into a variable
+# -> 3- cap number of images to CONFIG['max_images'] -> 4- load models
 # =======================================================================
 
+cache_path = os.path.join(CONFIG["data_dir"], "cache.json")
+synset_to_index, index_to_name = download_imagenet_index(CONFIG["imagenet_index_url"], cache_path)
+category_to_indicies, index_to_category = build_category_to_indicies(CATEGORY_TO_SYNSETS, synset_to_index)  
+#-> ( {"cat": {281, 289,}, ...}, {281: "cat", "289": "cat", ...} )
+
+# 2 -> 4 in progress
