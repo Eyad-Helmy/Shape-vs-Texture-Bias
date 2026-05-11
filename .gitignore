@@ -16,6 +16,7 @@ cache/
 
 # temp files
 test.py
+predict_single_image.py
 
 # results
 results/

@@ -89,3 +89,13 @@ if CONFIG["max_images"] and len(all_images) > CONFIG["max_images"]:
 
 print("\n[Setup] Loading Modles...")
 models = load_all_models(CONFIG["models"], CONFIG["device"])
+
+# =======================================================================
+# MAIN LOOP 1- loop over each model -> 2- loop over every image resulted
+# from dataset discovery -> 3- load each image into input tensor and visual tensors ->
+# 4- run inference on each input tensor to get decision -> 5- classify decision ->
+# 6- save all decision information into a dict -> 7- save dict into all results list ->
+# 8- calculate shape bias for each model -> turn all results into data frame and save them into csv
+# TODO classify decision function
+# =======================================================================
+
