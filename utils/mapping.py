@@ -178,7 +178,7 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
         synset_to_idx    : output of download_imagenet_index
  
     Returns:
-        category_to_indices : dict[str, set[int]]
+        category_to_indicies : dict[str, set[int]]
             "cat" -> {281, 282, 283, 284, 285, 286}
             Used to compute max confidence for a category.
  
@@ -196,7 +196,7 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
     """
 
     # the logic below makes {"cat": {100, 101, 103}, ...}
-    category_to_indices = {}
+    category_to_indicies = {}
     missing = []
 
     # cat == category
@@ -207,7 +207,7 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
         for syn in synsets:
             if syn in synset_to_idx:
                 indicies.add(synset_to_idx[syn])
-        category_to_indices[cat] = indicies
+        category_to_indicies[cat] = indicies
 
     if missing:
         print(f"  [mapping] {len(missing)} synset(s) not in ImageNet-1000 (skipped):")
@@ -216,23 +216,23 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
 
     # the logic below makes {100: "cat", 101: "cat", 102: "cat", ...}
     index_to_category = {}
-    for cat, indicies in category_to_indices.items():
+    for cat, indicies in category_to_indicies.items():
         for index in indicies:
             index_to_category[index] = cat
 
     #no two categories can share a class index
-    all_indices = [i for s in category_to_indices.values() for i in s]
+    all_indices = [i for s in category_to_indicies.values() for i in s]
     assert len(all_indices) == len(set(all_indices)), (
         "Two categories share a class index. Check CATEGORY_TO_SYNSETS."
     )
 
-    print(f"  [mapping] Mapping built: {len(category_to_indices)} categories, "
+    print(f"  [mapping] Mapping built: {len(category_to_indicies)} categories, "
           f"{len(index_to_category)} total class indices covered")
 
-    return category_to_indices, index_to_category
+    return category_to_indicies, index_to_category
 
 # test
 # url = "https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json"
 # synset_to_idx, idx_to_name = download_imagenet_index(url=url, save_path="../cache/cache.json")
-# category_to_indices, index_to_category = build_category_to_indicies(category_to_synsets=CATEGORY_TO_SYNSETS, synset_to_idx=synset_to_idx)
-# print(category_to_indices, "="*50, index_to_category)
+# category_to_indicies, index_to_category = build_category_to_indicies(category_to_synsets=CATEGORY_TO_SYNSETS, synset_to_idx=synset_to_idx)
+# print(category_to_indicies, "="*50, index_to_category)
