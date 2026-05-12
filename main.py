@@ -22,6 +22,8 @@ from utils import (download_imagenet_index,
 
 from models import load_all_models, run_inference
 
+from analysis import classify_decision
+
 CONFIG = {
     # Dataset
     "dataset_root": os.path.join(
@@ -96,6 +98,72 @@ models = load_all_models(CONFIG["models"], CONFIG["device"])
 # 4- run inference on each input tensor to get decision -> 5- classify decision ->
 # 6- save all decision information into a dict -> 7- save dict into all results list ->
 # 8- calculate shape bias for each model -> turn all results into data frame and save them into csv
-# TODO classify decision function
 # =======================================================================
 
+print("\n" + "=" * 60)
+print("  MAIN LOOP")
+print("=" * 60)
+
+all_results = []
+failures = []
+
+for model_name, model in models.items():
+    print(f"\n ==={model_name.upper()}===")
+    model_results = []
+
+    for i, image in enumerate(all_images):
+        try:
+            input_tensor, visual_array = load_image(image["path"])
+            probs = run_inference(model, input_tensor=input_tensor, device=CONFIG["device"])
+            result = classify_decision(
+                probs,
+                shape_label=image["shape_label"],
+                texture_label=image["texture_label"],
+                index_to_name=index_to_name,
+                index_to_category=index_to_category,
+                category_to_indicies=category_to_indicies
+            )
+
+            # unpacking result dict
+            row = {
+                "model":        model_name,
+                "file_name":    image["name"],
+                "shape_label":  image["shape_label"],
+                "texture_label":  image["texture_label"],
+                **result,
+                "_vis": visual_array
+            }
+
+            model_results.append(row)
+            all_results.append(row)
+
+            # live shape bias updates for every 100 images
+            if (i + 1) % 100 == 0 or i == 0:
+                n_s = sum(1 for r in model_results if r['decision'] == 'shape')
+                n_t = sum(1 for r in model_results if r['decision'] == 'texture')
+                sb  = n_s / (n_s + n_t) if (n_s + n_t) > 0 else 0
+                print(f"    [{i+1:4d}/{len(all_images)}]  "
+                      f"shape={n_s}  texture={n_t}  bias={sb:.3f}")
+
+        except Exception as e:
+            failures.append({
+                "model": model_name,
+                "file": image["name"],
+                "error": str(e)
+            })
+
+    n_s = sum(1 for r in model_results if r['decision'] == 'shape')
+    n_t = sum(1 for r in model_results if r['decision'] == 'texture')
+    n_n = sum(1 for r in model_results if r['decision'] == 'neither')
+    sb  = n_s / (n_s + n_t) if (n_s + n_t) > 0 else 0
+    print(f"\n  {model_name}: shape={n_s}  texture={n_t}  "
+          f"neither={n_n}  SHAPE_BIAS={sb:.4f}")
+ 
+print(f"\n  Processed: {len(all_results)}  |  Failed: {len(failures)}")
+print(failures)
+
+# save output in a csv file
+df_all   = pd.DataFrame([{k: v for k, v in r.items() if k != '_vis'} for r in all_results])
+csv_path = os.path.join(CONFIG["data_dir"], "all_decisions.csv")
+df_all.to_csv(csv_path, index=False)
+print(f"  Saved: {csv_path}")

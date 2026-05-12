@@ -31,7 +31,7 @@ def classify_decision(
 
     top1_index = int(np.argmax(probs))
     top1_name = index_to_name.get(top1_index, f"class_{top1_index}")
-    top1_category = index_to_category[top1_index, None]
+    top1_category = index_to_category.get(top1_index, None)
 
     # decision classification
     if top1_category == shape_label:
@@ -62,9 +62,9 @@ def classify_decision(
 
     return {
         "decision":         decision,       # shape-based, texture-based, or neither
-        "top1_class_index": top1_category,   # the model's top prediction
+        "top1_class_index": top1_index,      # the model's top predicted ImageNet index
         "top1_class_name":  top1_name,      # that prediction's name (e.g. tabby cat)
-        "top1_class_category":  top1_category, # that prediction's cat within out 16 cats (e.g. cat)
+        "top1_class_category":  top1_category, # that prediction's cat within our 16 cats (e.g. cat)
         "shape_confidence": shape_confidence,
         "texture_confidence": texture_confidence,
         "neither_confidence": neither_confidence,
