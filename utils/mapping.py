@@ -207,6 +207,8 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
         for syn in synsets:
             if syn in synset_to_idx:
                 indicies.add(synset_to_idx[syn])
+            else:
+                missing.append((cat, syn))
         category_to_indicies[cat] = indicies
 
     if missing:
@@ -235,4 +237,7 @@ def build_category_to_indicies(category_to_synsets: dict, synset_to_idx: dict) -
 # url = "https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json"
 # synset_to_idx, idx_to_name = download_imagenet_index(url=url, save_path="cache/cache.json")
 # category_to_indicies, index_to_category = build_category_to_indicies(category_to_synsets=CATEGORY_TO_SYNSETS, synset_to_idx=synset_to_idx)
-# print(category_to_indicies, "="*50, index_to_category)
+# # print(category_to_indicies, "="*50, index_to_category)
+# category_sums = {cat: 0.0 for cat in category_to_indicies.keys()}
+# for index, cats in index_to_category.items():
+#     category_sums[cats] += probs[index]

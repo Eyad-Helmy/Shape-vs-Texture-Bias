@@ -45,7 +45,7 @@ CONFIG = {
     "models": ["vgg16", "resnet50"],
  
     # None = process every image (~1200). Set e.g. 100 for a quick test.
-    "max_images":  None,
+    "max_images":  100,
     "random_seed": 42,
  
     # Baselines from Geirhos et al, Table 1.
@@ -136,6 +136,19 @@ for model_name, model in models.items():
 
             model_results.append(row)
             all_results.append(row)
+
+            # TEMP DEBUG — add after classify_decision call, remove later
+            if i < 5:
+                print(f"\n  --- DEBUG image {i} ---")
+                print(f"  file:           {image['name']}")
+                print(f"  shape_label:    {image['shape_label']}")
+                print(f"  texture_label:  {image['texture_label']}")
+                print(f"  top1_index:     {result['top1_class_index']}")
+                print(f"  top1_name:      {result['top1_class_name']}")
+                print(f"  top1_category:  {result['top1_class_category']}")
+                print(f"  decision:       {result['decision']}")
+                print(f"  shape_conf:     {result['shape_confidence']:.4f}")
+                print(f"  texture_conf:   {result['texture_confidence']:.4f}")
 
             # live shape bias updates for every 100 images
             if (i + 1) % 100 == 0 or i == 0:
