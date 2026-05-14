@@ -34,7 +34,7 @@ def parse_file_name(filepath: str) -> tuple:
     """
 
     name = os.path.splitext(os.path.basename(filepath))[0]  # this stems the extension
-    match = re.fullmatch(r"([a-z]+)[0-9]-([a-z]+)[0-9]", name)
+    match = re.fullmatch(r"([a-z]+)\d+-([a-z]+)\d+", name)
     if not match:
         return None, None
     return match.groups()[0], match.groups()[1]

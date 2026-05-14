@@ -1,9 +1,9 @@
-# This file only contains:
-#   - CONFIG
-#   - Setup calls (mapping, dataset, models)
-#   - The main processing loop
-#   - Analysis and visualization calls
-#   - The final report
+# # This file only contains:
+# #   - CONFIG
+# #   - Setup calls (mapping, dataset, models)
+# #   - The main processing loop
+# #   - Analysis and visualization calls
+# #   - The final report
 
 
 import os
@@ -16,7 +16,7 @@ import torch
 
 from utils import (download_imagenet_index,
                     build_category_to_indicies, 
-                    CATEGORY_TO_SYNSETS,
+                    CATEGORY_TO_INDICES,
                     discover_dataset,
                     load_image)
 
@@ -45,7 +45,7 @@ CONFIG = {
     "models": ["vgg16", "resnet50"],
  
     # None = process every image (~1200). Set e.g. 100 for a quick test.
-    "max_images":  100,
+    "max_images":  None,
     "random_seed": 42,
  
     # Baselines from Geirhos et al, Table 1.
@@ -75,11 +75,11 @@ print(f"  Images   : {CONFIG['max_images'] or 'all'}")  # if max_images is set t
 print("\n[Setup] Building ImageNet class mapping...")
 cache_path = os.path.join(CONFIG["data_dir"], "cache.json")
 synset_to_index, index_to_name = download_imagenet_index(CONFIG["imagenet_index_url"], cache_path)
-category_to_indicies, index_to_category = build_category_to_indicies(CATEGORY_TO_SYNSETS, synset_to_index)  
+category_to_indicies, index_to_category = build_category_to_indicies()  
 #-> ( {"cat": {281, 289,}, ...}, {281: "cat", "289": "cat", ...} )
 
 print("\n[Setup] Discovering Dataset...")
-CATEGORIES = sorted(CATEGORY_TO_SYNSETS.keys())
+CATEGORIES = CATEGORY_TO_INDICES.keys()
 all_images = discover_dataset(dataset_root=CONFIG["dataset_root"], categories=CATEGORIES)
 
 # limiting images to set number
@@ -180,3 +180,24 @@ df_all   = pd.DataFrame([{k: v for k, v in r.items() if k != '_vis'} for r in al
 csv_path = os.path.join(CONFIG["data_dir"], "all_decisions.csv")
 df_all.to_csv(csv_path, index=False)
 print(f"  Saved: {csv_path}")
+
+# # SANITY CHECK — remove after diagnosis
+# import urllib.request
+# from PIL import Image
+# import io
+
+# url = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/1200px-YellowLabradorLooking_new.jpg"
+# with urllib.request.urlopen(url) as r:
+#     img = Image.open(io.BytesIO(r.read())).convert("RGB")
+
+# tensor, _ = load_image.__wrapped__(img) if hasattr(load_image, '__wrapped__') else (None, None)
+# # simpler: just do it manually
+# from utils.dataset import model_transform
+# t = model_transform(img).unsqueeze(0)
+
+# for name, model in models.items():
+#     p = run_inference(model, t, CONFIG["device"])
+#     top5 = np.argsort(p)[-5:][::-1]
+#     print(f"\n{name} top-5 on Labrador:")
+#     for idx in top5:
+#         print(f"  {idx:4d}  {index_to_name.get(idx,'?'):30s}  {p[idx]:.4f}")
