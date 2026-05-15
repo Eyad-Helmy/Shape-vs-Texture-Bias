@@ -7,6 +7,8 @@
 # confidence analysis -> how confident modes are when making shape-based decisions vs texture-based
 
 import numpy as np
+import pandas as pd
+from scipy.stats import ttest_ind
 
 def classify_decision(
         probs: 'np.ndarray',
@@ -69,5 +71,123 @@ def classify_decision(
     }
 
 
-    
+def compute_shape_bias(decisions_series: 'pd.Series') -> tuple:
+    """
+    Compute shape bias and a 95% bootstrap confidence interval.
+ 
+    Bootstrap CI:
+      Resample the resolved decisions 1000 times with replacement.
+      Compute shape_bias for each resample.
+      Return the 2.5th and 97.5th percentiles.
+ 
+    Arguments:
+        decisions_series : pd.Series of 'shape' / 'texture' / 'neither' strings
+ 
+    Returns:
+        (shape_bias, (ci_low, ci_high))
+        shape_bias : float in [0, 1]
+        ci_low, ci_high : float 95% confidence interval bounds
+    """
+    resolved = decisions_series[decisions_series != 'neither']
+    if len(resolved) == 0:
+        return 0.0, (0.0, 0.0)
+ 
+    arr    = (resolved == 'shape').values.astype(int)
+    sb     = float(arr.mean())
+ 
+    # Bootstrap
+    rng     = np.random.default_rng(42)
+    boot_sb = np.array([
+        rng.choice(arr, size=len(arr), replace=True).mean()
+        for _ in range(1000)
+    ])
+ 
+    ci_lo = float(np.percentile(boot_sb, 2.5))
+    ci_hi = float(np.percentile(boot_sb, 97.5))
+ 
+    return sb, (ci_lo, ci_hi)
 
+def run_per_category_analysis(
+    df_all: 'pd.DataFrame',
+    model_names: list,
+    categories: list,
+) -> tuple:
+    """
+    Compute shape bias broken down by shape category and by texture category.
+ 
+    Returns:
+        per_shape_bias   : {model_name: {shape_cat:   shape_bias}}
+        per_texture_bias : {model_name: {texture_cat: shape_bias when this texture applied}}
+    """
+    per_shape_bias   = {}
+    per_texture_bias = {}
+ 
+    for model_name in model_names:
+        df_m = df_all[df_all['model'] == model_name]
+        per_shape_bias[model_name]   = {}
+        per_texture_bias[model_name] = {}
+ 
+        for cat in categories:
+            # Shape breakdown
+            subset = df_m[df_m['shape_label'] == cat]
+            if len(subset) > 0:
+                sb, _ = compute_shape_bias(subset['decision'])
+                per_shape_bias[model_name][cat] = sb
+ 
+            # Texture breakdown
+            subset = df_m[df_m['texture_label'] == cat]
+            if len(subset) > 0:
+                sb, _ = compute_shape_bias(subset['decision'])
+                per_texture_bias[model_name][cat] = sb
+ 
+    # Print a readable summary for every model
+    for model_name in model_names:
+        print(f"\n  Shape bias by SHAPE category ({model_name}):")
+        for cat, sb in sorted(per_shape_bias[model_name].items(), key=lambda x: -x[1]):
+            bar = '█' * int(sb * 20)
+            print(f"    {cat:<12}: {sb:.3f}  {bar}")
+ 
+        print(f"\n  Shape bias when THIS TEXTURE is applied ({model_name}):")
+        for cat, sb in sorted(per_texture_bias[model_name].items(), key=lambda x: -x[1]):
+            bar = '█' * int(sb * 20)
+            print(f"    {cat:<12}: {sb:.3f}  {bar}")
+ 
+    return per_shape_bias, per_texture_bias
+
+def run_confidence_analysis(df_all: 'pd.DataFrame', model_names: list):
+    """
+    Compare model confidence when making shape decisions vs texture decisions.
+ 
+    For each model, computes:
+      - Mean shape_confidence and texture_confidence when the model makes texture decisions
+        (how confident is it when it gets fooled by a texture)
+      - Welch's t-test to check if the difference is statistically significant
+    """
+    print("\n  Confidence analysis:")
+ 
+    for model_name in model_names:
+        df_m              = df_all[df_all['model'] == model_name]
+        shape_decisions   = df_m[df_m['decision'] == 'shape']
+        texture_decisions = df_m[df_m['decision'] == 'texture']
+ 
+        print(f"\n  {model_name.upper()}")
+ 
+        if len(shape_decisions) > 0:
+            print(f"    Shape   decisions — shape_confidence   mean: "
+                  f"{shape_decisions['shape_confidence'].mean():.4f}  "
+                  f"std: {shape_decisions['shape_confidence'].std():.4f}")
+ 
+        if len(texture_decisions) > 0:
+            print(f"    Texture decisions — texture_confidence mean: "
+                  f"{texture_decisions['texture_confidence'].mean():.4f}  "
+                  f"std: {texture_decisions['texture_confidence'].std():.4f}")
+ 
+        if len(texture_decisions) > 10 and len(shape_decisions) > 10:
+            stat, pval = ttest_ind(
+                texture_decisions['texture_confidence'],
+                texture_decisions['shape_confidence'],
+                equal_var=False,   # Welch's, not Student's
+            )
+            sig = "SIGNIFICANT" if pval < 0.05 else "not significant"
+            print(f"    t-test (texture_confidence vs shape_confidence on texture decisions):")
+            print(f"      t={stat:.3f}  p={pval:.4f}  → {sig}")

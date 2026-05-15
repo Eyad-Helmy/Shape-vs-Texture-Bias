@@ -22,7 +22,7 @@ from utils import (download_imagenet_index,
 
 from models import load_all_models, run_inference
 
-from analysis import classify_decision
+from analysis import classify_decision, compute_shape_bias, run_confidence_analysis, run_per_category_analysis
 
 CONFIG = {
     # Dataset
@@ -94,7 +94,7 @@ print("\n[Setup] Loading Modles...")
 models = load_all_models(CONFIG["models"], CONFIG["device"])
 
 # =======================================================================
-# MAIN LOOP 1- loop over each model -> 2- loop over every image resulted
+# MAIN LOOP: 1- loop over each model -> 2- loop over every image resulted
 # from dataset discovery -> 3- load each image into input tensor and visual tensors ->
 # 4- run inference on each input tensor to get decision -> 5- classify decision ->
 # 6- save all decision information into a dict -> 7- save dict into all results list ->
@@ -182,3 +182,34 @@ df_all   = pd.DataFrame([{k: v for k, v in r.items() if k != '_vis'} for r in al
 csv_path = os.path.join(CONFIG["data_dir"], "all_decisions.csv")
 df_all.to_csv(csv_path, index=False)
 print(f"  Saved: {csv_path}")
+
+# =======================================================================
+# ANALYSIS: this phase aims to analyze the results of classifying model decisions into either shape or texture
+# 1- loop over each model and find shape bias with confidence intervals 
+# 2- run per-category analysis to see how confident the model was for every category
+#    both when predicting it as a shape and as a texture. done for all 16 super categories
+#    this helps for knowing which category's shape is easy to be biased towards and others where shape 
+#    is unrecgonizable when texture comes in the picture
+# 3- run confidence analysis to see how confident the models were in predicting textures compared to
+#    their confidence when choosing based on shapes
+# =======================================================================
+
+print("\n" + "=" * 60)
+print("  ANALYSIS")
+print("=" * 60)
+
+print("\n  Overall shape bias:")
+model_shape_bias = {}
+for model_name in CONFIG["models"]:
+    sb, ci = compute_shape_bias(df_all[df_all['model'] == model_name]['decision'])
+    model_shape_bias[model_name] = (sb, ci)     #e.g. {"vgg16": ( 0.208, (0.190 , 0.220) )}
+    pub = CONFIG["published_baselines"].get(model_name, "n/a")
+    print(f"    {model_name:<12}: {sb:.4f}  CI=[{ci[0]:.4f}, {ci[1]:.4f}]  published={pub}")
+print(f"    {'human':<12}: {CONFIG['human_shape_bias']:.4f}  (Geirhos 2019)")
+
+per_shape_bias, per_texture_bias = run_per_category_analysis(
+    df_all, CONFIG["models"], CATEGORIES
+)
+
+run_confidence_analysis(df_all, CONFIG["models"])   # no return
+print("\n=================== End Of Logs ===================")
