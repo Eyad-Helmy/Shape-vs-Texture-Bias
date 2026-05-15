@@ -4,3 +4,5 @@ from .metrics import(
     run_per_category_analysis,
     run_confidence_analysis,
 )
+
+from .visualizations import generate_all_figures

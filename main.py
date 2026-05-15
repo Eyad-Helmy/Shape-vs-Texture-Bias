@@ -22,7 +22,13 @@ from utils import (download_imagenet_index,
 
 from models import load_all_models, run_inference
 
-from analysis import classify_decision, compute_shape_bias, run_confidence_analysis, run_per_category_analysis
+from analysis import (
+    classify_decision,
+    compute_shape_bias,
+    run_confidence_analysis,
+    run_per_category_analysis,
+    generate_all_figures,
+    )
 
 CONFIG = {
     # Dataset
@@ -212,4 +218,22 @@ per_shape_bias, per_texture_bias = run_per_category_analysis(
 )
 
 run_confidence_analysis(df_all, CONFIG["models"])   # no return
-print("\n=================== End Of Logs ===================")
+
+# =======================================================================
+# FIGURES
+# =======================================================================
+ 
+print("\n" + "=" * 60)
+print("  FIGURES")
+print("=" * 60)
+ 
+generate_all_figures(
+    df_all           = df_all,
+    model_names      = CONFIG["models"],
+    model_shape_bias = model_shape_bias,
+    per_shape_bias   = per_shape_bias,
+    per_texture_bias = per_texture_bias,
+    all_results      = all_results,
+    config           = CONFIG,
+    categories_16    = CATEGORIES,
+)
