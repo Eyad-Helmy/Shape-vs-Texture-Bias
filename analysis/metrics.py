@@ -7,7 +7,6 @@
 # confidence analysis -> how confident modes are when making shape-based decisions vs texture-based
 
 import numpy as np
-import pandas as pd
 
 def classify_decision(
         probs: 'np.ndarray',
@@ -28,42 +27,42 @@ def classify_decision(
  
     Returns a dict with all decision information for one image.
     """
-    top1_index = int(np.argmax(probs))
-    top1_name = index_to_name.get(top1_index, f"class_{top1_index}")
-    top1_category = index_to_category.get(top1_index, None)
+    # 1. Map 1000-class probabilities to 16 categories using the mean
+    mapped_probs = {}
+    for cat, indices in category_to_indicies.items():
+        indices_list = list(indices)
+        if indices_list:
+            mapped_probs[cat] = float(np.mean(probs[indices_list]))
+        else:
+            mapped_probs[cat] = 0.0
 
-    # decision classification
+    # 2. Force the 16-way decision
+    top1_category = max(mapped_probs, key=mapped_probs.get)
+
     if top1_category == shape_label:
         decision = "shape"
     elif top1_category == texture_label:
         decision = "texture"
     else:
+        # Represents one of the OTHER 14 mapped categories
         decision = "neither"
 
-    shape_index_list = list(category_to_indicies.get(shape_label, set()))   # all of cat's indicies
-    texture_index_list = list(category_to_indicies.get(texture_label, set()))   # all of elephent's indicies
+    # 3. Extract the absolute 1000-class top-1 for logging purposes
+    top1_index = int(np.argmax(probs))
+    top1_name = index_to_name.get(top1_index, f"class_{top1_index}")
 
-    # we choose incdicies of all the names(sub-categories) of our shape label from the probs array
-    # which gives us the confidence of the model for all of these sub-cats then we get the max one
-    # to represent the full category. this results in the confidence of it's shape class prediction
-    shape_confidence = float(probs[shape_index_list].max()) if shape_index_list else 0.0
-    texture_confidence = float(probs[texture_index_list].max()) if texture_index_list else 0.0
+    # 4. Extract confidence scores aligned with the average mapping logic
+    shape_confidence = mapped_probs.get(shape_label, 0.0)
+    texture_confidence = mapped_probs.get(texture_label, 0.0)
 
-    # confidence for neither
-    neither_mask = np.ones(len(probs), dtype=bool)
-    if shape_index_list:
-        neither_mask[shape_index_list] = False
-    if texture_index_list:
-        neither_mask[texture_index_list] = False
-    # now neither mask has 1000 elements where the indexes that belong to shape or tex class are all false
-
-    neither_confidence = float(probs[neither_mask].max())
+    # Maintained from handoff.md logic: absolute top-1 probability over 1000 classes
+    neither_confidence = float(probs[top1_index]) if decision == "neither" else 0.0
 
     return {
-        "decision":         decision,       # shape-based, texture-based, or neither
-        "top1_class_index": top1_index,      # the model's top predicted ImageNet index
-        "top1_class_name":  top1_name,      # that prediction's name (e.g. tabby cat)
-        "top1_class_category":  top1_category, # that prediction's cat within our 16 cats (e.g. cat)
+        "decision":         decision,
+        "top1_class_index": top1_index,
+        "top1_class_name":  top1_name,
+        "top1_class_category":  top1_category,
         "shape_confidence": shape_confidence,
         "texture_confidence": texture_confidence,
         "neither_confidence": neither_confidence,
