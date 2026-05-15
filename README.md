@@ -27,7 +27,7 @@ These conflicting stimuli reveal which cue dominates a model's decision-making.
 ### Prerequisites
 
 - Python 3.8+
-- CUDA 11.8+ (for GPU acceleration, recommended)
+- CUDA 11.8+ (for GPU acceleration, optional)
 - ~50GB disk space (for models and dataset)
 
 ### Setup
@@ -65,8 +65,6 @@ These conflicting stimuli reveal which cue dominates a model's decision-making.
 ```
 shape_vs_texture_bias/
 ├── main.py                          # Main execution pipeline
-├── predict_single_image.py          # Utility for single-image predictions
-├── test.py                          # Development/testing code
 ├── requirements.txt                 # Python dependencies with pinned versions
 ├── analysis/
 │   ├── __init__.py
