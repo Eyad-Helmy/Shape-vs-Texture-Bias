@@ -113,13 +113,7 @@ This will:
 - `models`: List of models to evaluate; see `models/model_loader.py` for available options
 - `device`: Automatically detects CUDA; set manually if needed
 
-### 2. **Predict on a single image**:
-
-```bash
-python predict_single_image.py --image path/to/image.jpg --model vgg16
-```
-
-### 3. **Run analysis on cached results**:
+### 2. **Run analysis on cached results**:
 
 If you have a cached `cache/all_decisions.csv` from a previous run, analysis functions can be called directly to regenerate visualizations without re-running inference.
 
