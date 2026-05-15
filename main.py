@@ -54,6 +54,7 @@ CONFIG = {
     "published_baselines": {
         "vgg16":    0.208,
         "resnet50": 0.221,
+        "alexnet": 0.429,
     },
  
     "device": "cuda" if torch.cuda.is_available() else "cpu",   
