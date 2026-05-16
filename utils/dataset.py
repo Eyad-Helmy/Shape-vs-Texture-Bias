@@ -11,18 +11,6 @@ import numpy as np
 # constants
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD  = [0.229, 0.224, 0.225]
-IMAGE_SIZE    = (224, 224)
-
-model_transform = tranforms.Compose([
-    tranforms.Resize(IMAGE_SIZE),
-    tranforms.ToTensor(),
-    tranforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-])
-
-visual_transform = tranforms.Compose([
-    tranforms.Resize(IMAGE_SIZE),
-    tranforms.ToTensor(),
-])
 
 
 def parse_file_name(filepath: str) -> tuple:
@@ -119,7 +107,22 @@ def discover_dataset(dataset_root: str, categories: list) -> list:
 # print(valid_images[-1])
 
 
-def load_image(path: str) -> tuple:
+def get_transforms(target_size: tuple) -> tuple:
+
+    model_transform = tranforms.Compose([
+    tranforms.Resize(target_size),
+    tranforms.ToTensor(),
+    tranforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+    ])
+
+    visual_transform = tranforms.Compose([
+        tranforms.Resize(target_size),
+        tranforms.ToTensor(),
+    ])
+
+    return model_transform, visual_transform
+
+def load_image(path: str, target_size: tuple = (224, 224)) -> tuple:
     """
     Load one image and return two versions of it.
  
@@ -129,6 +132,8 @@ def load_image(path: str) -> tuple:
     """
 
     image = Image.open(path).convert("RGB")
+
+    model_transform, visual_transform = get_transforms(target_size)
 
     input_tensor = model_transform(image).unsqueeze(0)
 

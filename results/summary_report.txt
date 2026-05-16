@@ -7,7 +7,7 @@ Categories       : 16
 SHAPE BIAS:
   vgg16       : 0.0795  CI=[0.063,0.097]  published=0.208
   resnet50    : 0.2149  CI=[0.186,0.244]  published=0.221
-  alexnet     : 0.2394  CI=[0.209,0.270]  published=0.429
+  alexnet     : 0.2639  CI=[0.231,0.295]  published=0.429
   human       : 0.9600  (Geirhos 2019)
 
 Output files:

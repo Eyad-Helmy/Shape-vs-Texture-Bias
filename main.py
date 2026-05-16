@@ -113,14 +113,19 @@ print("=" * 60)
 
 all_results = []
 failures = []
-
+0.064
 for model_name, model in models.items():
     print(f"\n ==={model_name.upper()}===")
     model_results = []
 
     for i, image in enumerate(all_images):
         try:
-            input_tensor, visual_array = load_image(image["path"])
+            if model_name == "alexnet":
+                target_size = (227, 227)
+            else:
+                target_size = (224, 224)
+            
+            input_tensor, visual_array = load_image(image["path"], target_size)
             probs = run_inference(model, input_tensor=input_tensor, device=CONFIG["device"])
             result = classify_decision(
                 probs,
