@@ -48,7 +48,7 @@ CONFIG = {
     ),
  
     # Models — must be keys in models/model_loader.py MODEL_REGISTRY
-    "models": ["vgg16", "resnet50", "alexnet"],
+    "models": ["vgg16", "resnet50", "alexnet", "vit_b_16", "vit_l_16"],
  
     # None = process every image (~1200)
     "max_images":  None,

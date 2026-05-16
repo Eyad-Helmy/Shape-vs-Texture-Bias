@@ -9,6 +9,8 @@ MODEL_REGISTERY = {
     "vgg16":    lambda: models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1),
     "resnet50":    lambda: models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1),
     "alexnet":    lambda: models.alexnet(weights=models.AlexNet_Weights.IMAGENET1K_V1),
+    "vit_b_16": lambda: models.vit_b_16(weights=models.ViT_B_16_Weights.IMAGENET1K_V1),
+    "vit_l_16": lambda: models.vit_l_16(weights=models.ViT_L_16_Weights.IMAGENET1K_V1),
 }
 
 def load_all_models(model_names: list, device: str) -> dict:
