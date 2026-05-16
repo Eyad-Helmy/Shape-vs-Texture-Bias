@@ -144,19 +144,6 @@ for model_name, model in models.items():
             model_results.append(row)
             all_results.append(row)
 
-            # TEMP DEBUG — add after classify_decision call, remove later
-            if i < 5:
-                print(f"\n  --- DEBUG image {i} ---")
-                print(f"  file:           {image['name']}")
-                print(f"  shape_label:    {image['shape_label']}")
-                print(f"  texture_label:  {image['texture_label']}")
-                print(f"  top1_index:     {result['top1_class_index']}")
-                print(f"  top1_name:      {result['top1_class_name']}")
-                print(f"  top1_category:  {result['top1_class_category']}")
-                print(f"  decision:       {result['decision']}")
-                print(f"  shape_conf:     {result['shape_confidence']:.4f}")
-                print(f"  texture_conf:   {result['texture_confidence']:.4f}")
-
             # live shape bias updates for every 100 images
             if (i + 1) % 100 == 0 or i == 0:
                 n_s = sum(1 for r in model_results if r['decision'] == 'shape')
@@ -183,9 +170,9 @@ for model_name, model in models.items():
 print(f"\n  Processed: {len(all_results)}  |  Failed: {len(failures)}")
 print(failures)
 
-# save output in a csv file
+# save output in a csv file (place into results/ instead of cache/)
 df_all   = pd.DataFrame([{k: v for k, v in r.items() if k != '_vis'} for r in all_results])
-csv_path = os.path.join(CONFIG["data_dir"], "all_decisions.csv")
+csv_path = os.path.join(CONFIG["output_dir"], "all_decisions.csv")
 df_all.to_csv(csv_path, index=False)
 print(f"  Saved: {csv_path}")
 
@@ -237,3 +224,47 @@ generate_all_figures(
     config           = CONFIG,
     categories_16    = CATEGORIES,
 )
+
+# =======================================================================
+# FINAL REPORT
+# =======================================================================
+ 
+print("\n" + "=" * 60)
+print("  SUMMARY")
+print("=" * 60)
+ 
+lines = [
+    "",
+    "Results Summary",
+    "-" * 50,
+    f"Images processed : {len(all_images)}  |  Failures: {len(failures)}",
+    f"Categories       : {len(CATEGORIES)}",
+    "",
+    "SHAPE BIAS:",
+]
+for name in CONFIG["models"]:
+    sb, ci = model_shape_bias[name]
+    pub    = CONFIG["published_baselines"].get(name, 0)
+    lines.append(
+        f"  {name:<12}: {sb:.4f}  CI=[{ci[0]:.3f},{ci[1]:.3f}]  published={pub:.3f}"
+    )
+lines.append(f"  {'human':<12}: {CONFIG['human_shape_bias']:.4f}  (Geirhos 2019)")
+lines += [
+    "",
+    "Output files:",
+    "  results/all_decisions.csv",
+    "  results/figures/fig1_main_shape_bias.png",
+    "  results/figures/fig2_per_category_heatmap.png",
+    "  results/figures/fig3_confidence_distributions.png",
+    "  results/figures/fig4_example_decisions.png",
+    "  results/figures/fig5_decision_breakdown.png",
+    "",
+]
+ 
+report = "\n".join(lines)
+print(report)
+ 
+with open(os.path.join(CONFIG["output_dir"], "summary_report.txt"), 'w') as f:
+    f.write(report)
+ 
+print("Done.")
