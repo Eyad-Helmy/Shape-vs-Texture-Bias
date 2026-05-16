@@ -4,6 +4,41 @@ import torch
 import torch.nn.functional as F
 import torchvision.models as models
 import numpy as np
+import os
+from collections import OrderedDict
+
+
+def load_shape_resnet50(weights_path: str) -> torch.nn.Module:
+    """
+    Loads the Shape-ResNet50 model using legacy Geirhos weights.
+    Strips the 'module.' prefix caused by legacy nn.DataParallel training.
+    """
+
+    # allow passing the path without extension; try common extensions
+    orig_path = weights_path
+    if not os.path.exists(weights_path):
+        alt = weights_path + ".pth"
+        if os.path.exists(alt):
+            weights_path = alt
+        else:
+            raise FileNotFoundError(
+                f"Shape-ResNet50 was not found at {orig_path}.\n"
+                f"Tried: {orig_path} and {alt} (cwd={os.getcwd()})"
+            )
+
+    model = models.resnet50()   # not pretrained
+    checkpoint = torch.load(weights_path, "cuda")
+    state_dict = checkpoint["state_dict"] if "state_dict" in checkpoint else checkpoint
+
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        name = k.replace("module.", "") if k.startswith("module.") else k
+        new_state_dict[name] = v
+
+    model.load_state_dict(new_state_dict)
+
+    return model
+
 
 MODEL_REGISTERY = {
     "vgg16":    lambda: models.vgg16(weights=models.VGG16_Weights.IMAGENET1K_V1),
@@ -11,7 +46,12 @@ MODEL_REGISTERY = {
     "alexnet":    lambda: models.alexnet(weights=models.AlexNet_Weights.IMAGENET1K_V1),
     "vit_b_16": lambda: models.vit_b_16(weights=models.ViT_B_16_Weights.IMAGENET1K_V1),
     "vit_l_16": lambda: models.vit_l_16(weights=models.ViT_L_16_Weights.IMAGENET1K_V1),
+    "shape_resnet50_SIN": lambda: load_shape_resnet50(weights_path="weights/resnet50_train_60_epochs-c8e5653e"),
+    "shape_resnet50_SIN_and_IN": lambda: load_shape_resnet50(weights_path="weights/resnet50_train_45_epochs_combined_IN_SF-2a0d100e"),
+    "shape_resnet50_SIN_and_IN_finetuned_on_IN": lambda: load_shape_resnet50(weights_path="weights/resnet50_finetune_60_epochs_lr_decay_after_30_start_resnet50_train_45_epochs_combined_IN_SF-ca06340c"),
+
 }
+
 
 def load_all_models(model_names: list, device: str) -> dict:
     """

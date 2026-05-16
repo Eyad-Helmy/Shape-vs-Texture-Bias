@@ -5,11 +5,10 @@ Images processed : 1200  |  Failures: 0
 Categories       : 16
 
 SHAPE BIAS:
-  vgg16       : 0.0795  CI=[0.063,0.097]  published=0.208
   resnet50    : 0.2149  CI=[0.186,0.244]  published=0.221
-  alexnet     : 0.2639  CI=[0.231,0.295]  published=0.429
-  vit_b_16    : 0.3840  CI=[0.352,0.416]  published=0.000
-  vit_l_16    : 0.2901  CI=[0.262,0.321]  published=0.000
+  shape_resnet50_SIN: 0.8139  CI=[0.787,0.841]  published=0.000
+  shape_resnet50_SIN_and_IN: 0.3465  CI=[0.315,0.381]  published=0.000
+  shape_resnet50_SIN_and_IN_finetuned_on_IN: 0.2049  CI=[0.179,0.235]  published=0.000
   human       : 0.9600  (Geirhos 2019)
 
 Output files:

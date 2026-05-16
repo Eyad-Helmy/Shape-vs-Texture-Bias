@@ -17,3 +17,9 @@ cache/
 # temp files
 test.py
 predict_single_image.py
+
+# weights
+weights/
+
+# results
+results/figures/
