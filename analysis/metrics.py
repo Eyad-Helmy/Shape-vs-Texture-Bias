@@ -191,3 +191,31 @@ def run_confidence_analysis(df_all: 'pd.DataFrame', model_names: list):
             sig = "SIGNIFICANT" if pval < 0.05 else "not significant"
             print(f"    t-test (texture_confidence vs shape_confidence on texture decisions):")
             print(f"      t={stat:.3f}  p={pval:.4f}  → {sig}")
+
+
+def classify_single_cue(
+        probs: 'np.ndarray',
+        ground_truth: str,
+        category_to_indicies: dict,
+) -> dict:
+    """
+    Maps 1000-class ImageNet probabilities to the 16 target categories 
+    and evaluates accuracy against a single ground-truth label.
+    """
+    mapped_probs = {}
+    for cat, indices in category_to_indicies.items():
+        indices_list = list(indices)
+        if indices_list:
+            mapped_probs[cat] = float(np.mean(probs[indices_list]))
+        else:
+            mapped_probs[cat] = 0.0
+
+    prediction = max(mapped_probs, key=mapped_probs.get)
+    is_correct = bool(prediction == ground_truth)
+    confidence = float(mapped_probs.get(prediction, 0.0))
+
+    return {
+        "prediction": prediction,
+        "is_correct": is_correct,
+        "confidence": confidence
+    }
