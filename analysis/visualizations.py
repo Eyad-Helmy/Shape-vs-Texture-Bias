@@ -159,7 +159,7 @@ def generate_all_figures(
     print(f"    Saved: {path3}")
 
     print("  Generating Fig 4: Example image grid...")
-    primary = model_names[1]        # --------------------------------------------------------
+    primary = model_names[1]
     df_p    = df_all[df_all['model'] == primary]
     shape_ex   = df_p[df_p['decision'] == 'shape'].head(4)
     texture_ex = df_p[df_p['decision'] == 'texture'].head(4)

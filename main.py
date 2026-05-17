@@ -48,7 +48,9 @@ CONFIG = {
     ),
  
     # Models — must be keys in models/model_loader.py MODEL_REGISTRY
-    "models": ["resnet50", "shape_resnet50_SIN", "shape_resnet50_SIN_and_IN", "shape_resnet50_SIN_and_IN_finetuned_on_IN"],
+    # "models": ["resnet50", "shape_resnet50_SIN", "shape_resnet50_SIN_and_IN", "shape_resnet50_SIN_and_IN_finetuned_on_IN"],
+    # "models": ["resnet50", "shape_resnet50_SIN", "shape_resnet50_SIN_and_IN", "shape_resnet50_SIN_and_IN_finetuned_on_IN"],
+    "models": ["vgg16", "resnet50", "alexnet", "vit_b_16"],
  
     # None = process every image (~1200)
     "max_images":  None,
@@ -113,7 +115,6 @@ print("=" * 60)
 
 all_results = []
 failures = []
-0.064
 for model_name, model in models.items():
     print(f"\n ==={model_name.upper()}===")
     model_results = []
