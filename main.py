@@ -84,7 +84,7 @@ print(f"  Images   : {CONFIG['max_images'] or 'all'}")  # if max_images is set t
 print("\n[Setup] Building ImageNet class mapping...")
 cache_path = os.path.join(CONFIG["data_dir"], "cache.json")
 synset_to_index, index_to_name = download_imagenet_index(CONFIG["imagenet_index_url"], cache_path)
-category_to_indicies, index_to_category = build_category_to_indicies()  
+category_to_indicies, index_to_category = build_category_to_indicies()
 #-> ( {"cat": {281, 289,}, ...}, {281: "cat", "289": "cat", ...} )
 
 print("\n[Setup] Discovering Dataset...")
