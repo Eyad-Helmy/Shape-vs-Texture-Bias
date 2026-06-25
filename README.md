@@ -2,6 +2,10 @@
 
 A comprehensive analysis framework to quantify and visualize shape bias versus texture bias in Convolutional Neural Networks (CNNs). This project evaluates how modern CNN architectures (VGG16, ResNet50, AlexNet) make predictions based on shape features versus texture features when processing images with conflicting cues.
 
+## Full Presentation
+
+For anyone who is interested in seeing the full presentation of the project, [Click here](https://canva.link/t2qrsqe3l32asri)
+
 ## Project Overview
 
 This project implements the methodology from [Geirhos et al. (2019)](https://openreview.net/forum?id=Bygh9j09KX) to measure the extent to which CNNs rely on shape versus texture when making predictions. The framework:
